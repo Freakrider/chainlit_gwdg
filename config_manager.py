@@ -16,17 +16,19 @@ class ConfigManager:
     @staticmethod
     def update_env_file(env_path: str, key: str, value: Any):
         if value is not None:
-            set_key(env_path, key, str(value))
+            # Konvertiere numerische Werte zu ihrem korrekten Typen
+            if isinstance(value, (int, float)):
+                set_key(env_path, key, str(value))
+            else:
+                set_key(env_path, key, value)
 
     @staticmethod
     def get_env_value(key: str) -> str:
         return os.getenv(key, "")
-
     async def load_settings(self) -> List[InputWidget]:
         current_settings = cl.user_session.get("settings", {})
         self.settings = []
 
-        # Add API Key setting
         api_key = current_settings.get("GWDG_API_KEY", self.get_env_value("GWDG_API_KEY"))
         self.settings.append(TextInput(
             id="GWDG_API_KEY",
@@ -35,10 +37,11 @@ class ConfigManager:
             placeholder="Enter your GWDG API Key here"
         ))
 
-        # Add Temperature setting
-        temperature = current_settings.get("Temperature", 0.7)
+        temperature = current_settings.get("TEMPERATURE", 0.7)
+        if isinstance(temperature, str):
+            temperature = float(temperature)
         self.settings.append(Slider(
-            id="Temperature",
+            id="TEMPERATURE",
             label="Temperature",
             initial=temperature,
             min=0,
@@ -46,10 +49,11 @@ class ConfigManager:
             step=0.1
         ))
 
-        # Add MaxTokens setting
-        max_tokens = current_settings.get("MaxTokens", 4000)
+        max_tokens = current_settings.get("MAXTOKENS", 4000)
+        if isinstance(max_tokens, str):
+            max_tokens = int(max_tokens)
         self.settings.append(Slider(
-            id="MaxTokens",
+            id="MAXTOKENS",
             label="Max Tokens",
             initial=max_tokens,
             min=50,
@@ -57,11 +61,15 @@ class ConfigManager:
             step=50
         ))
 
-        # Load models if API Key is available
         if api_key:
             models = await self.get_available_models(api_key)
             if models:
                 current_model = current_settings.get("ACTIVEMODEL")
+                if not current_model:
+                    current_model = models[0]  # Set default to the first model if none is selected
+                    current_settings["ACTIVEMODEL"] = current_model
+                    cl.user_session.set("settings", current_settings)
+
                 initial_index = models.index(current_model) if current_model in models else 0
                 self.settings.append(Select(
                     id="ACTIVEMODEL",
@@ -109,7 +117,7 @@ class ConfigManager:
 
     def get_setting_value(self, key: str) -> Any:
         # First, try to get the value from the environment
-        env_value = os.getenv(key)
+        env_value = self.get_env_value(key)
         if env_value is not None:
             return env_value
         

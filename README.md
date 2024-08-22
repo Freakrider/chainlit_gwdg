@@ -32,7 +32,7 @@ Um die Chainlit-Anwendung auf Ihrem Rechner zu installieren und einzurichten, fo
     python3 -m venv .venv
     ```
 
-4. Aktivieren Sie die virtuelle Umgebung:
+4. Aktivieren Sie die virtuelle Umgebung (Mac):
 
     ```bash
     source .venv/bin/activate

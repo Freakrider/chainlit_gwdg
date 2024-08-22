@@ -19,12 +19,22 @@ async def update_settings(settings):
 async def main(message: cl.Message):
     api_key = config_manager.get_setting_value("GWDG_API_KEY")
     model = config_manager.get_setting_value("ACTIVEMODEL")
-    temperature = config_manager.get_setting_value("Temperature")
-    max_tokens = config_manager.get_setting_value("MaxTokens")
+    temperature = config_manager.get_setting_value("MAXTOKENS")
+    max_tokens = config_manager.get_setting_value("TEMPERATURE")
 
-    if not api_key or not model:
-        await cl.Message(content="Please set your API key and select a model in the settings.").send()
+    if not api_key:
+        await cl.Message(content="Please set your API key in the settings.").send()
         return
+    
+    if not model:
+        await cl.Message(content="Please select a model in the settings before sending a message.").send()
+        return
+
+    # Ensure temperature and max_tokens are set
+    if temperature is None:
+        temperature = 0.7  # Default temperature
+    if max_tokens is None:
+        max_tokens = 4000  # Default max tokens
 
     client = OpenAI(api_key=api_key, base_url=base_url)
     
@@ -42,7 +52,7 @@ async def main(message: cl.Message):
         
         content = ""
         for chunk in stream:
-            if chunk.choices[0].delta.content is not None:
+            if len(chunk.choices) > 0 and chunk.choices[0].delta.content is not None:
                 content += chunk.choices[0].delta.content
                 await msg.stream_token(chunk.choices[0].delta.content)
         
