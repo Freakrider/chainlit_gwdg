@@ -19,8 +19,8 @@ async def update_settings(settings):
 async def main(message: cl.Message):
     api_key = config_manager.get_setting_value("GWDG_API_KEY")
     model = config_manager.get_setting_value("ACTIVEMODEL")
-    temperature = config_manager.get_setting_value("MAXTOKENS")
-    max_tokens = config_manager.get_setting_value("TEMPERATURE")
+    temperature = float(config_manager.get_setting_value("TEMPERATURE"))
+    max_tokens = int(config_manager.get_setting_value("MAXTOKENS"))
 
     if not api_key:
         await cl.Message(content="Please set your API key in the settings.").send()

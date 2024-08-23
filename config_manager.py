@@ -37,9 +37,8 @@ class ConfigManager:
             placeholder="Enter your GWDG API Key here"
         ))
 
-        temperature = current_settings.get("TEMPERATURE", 0.7)
-        if isinstance(temperature, str):
-            temperature = float(temperature)
+        temperature = float(current_settings.get("TEMPERATURE", 0.7))
+
         self.settings.append(Slider(
             id="TEMPERATURE",
             label="Temperature",
@@ -49,9 +48,8 @@ class ConfigManager:
             step=0.1
         ))
 
-        max_tokens = current_settings.get("MAXTOKENS", 4000)
-        if isinstance(max_tokens, str):
-            max_tokens = int(max_tokens)
+        max_tokens = int(current_settings.get("MAXTOKENS", 4000))
+
         self.settings.append(Slider(
             id="MAXTOKENS",
             label="Max Tokens",
